@@ -1,0 +1,287 @@
+#include <iostream>
+using namespace std;
+
+// ---------------------------------------------------------
+// Node class (lab manual style)
+// ---------------------------------------------------------
+template <typename Type>
+class Node {
+private:
+    Type element;
+    Node<Type>* next_node;
+
+public:
+    Node(Type const& e, Node<Type>* n = NULL) :
+        element(e), next_node(n) {}
+
+    Type retrieve() const {
+        return element;
+    }
+
+    Node<Type>* next() const {
+        return next_node;
+    }
+
+    void set_next(Node<Type>* n) {
+        next_node = n;
+    }
+};
+
+// ---------------------------------------------------------
+// Simple List class (lab manual style)
+// ---------------------------------------------------------
+template <typename Type>
+class List {
+private:
+    Node<Type>* head_node;
+    Node<Type>* tail_node;
+    int list_size;
+
+public:
+    List() : head_node(NULL), tail_node(NULL), list_size(0) {}
+
+    Node<Type>* head() const {
+        return head_node;
+    }
+
+    int size() const {
+        return list_size;
+    }
+
+    void push_back(Type const& obj) {
+        Node<Type>* n = new Node<Type>(obj);
+        if (head_node == NULL) {
+            head_node = tail_node = n;
+        }
+        else {
+            tail_node->set_next(n);
+            tail_node = n;
+        }
+        list_size++;
+    }
+
+    void erase(Type obj) {
+        if (head_node == NULL) return;
+
+        if (head_node->retrieve() == obj) {
+            Node<Type>* tmp = head_node;
+            head_node = head_node->next();
+            delete tmp;
+            list_size--;
+            return;
+        }
+
+        Node<Type>* prev = head_node;
+        Node<Type>* curr = head_node->next();
+
+        while (curr != NULL) {
+            if (curr->retrieve() == obj) {
+                prev->set_next(curr->next());
+                delete curr;
+                list_size--;
+                return;
+            }
+            prev = curr;
+            curr = curr->next();
+        }
+    }
+};
+
+// ---------------------------------------------------------
+// Queue class (lab manual style)
+// ---------------------------------------------------------
+template <typename Type>
+class Queue {
+private:
+    List<Type> list;
+
+public:
+    void push(Type const& obj) {
+        list.push_back(obj);
+    }
+
+    bool empty() const {
+        return (list.size() == 0);
+    }
+
+    Type pop() {
+        Node<Type>* h = list.head();
+        Type value = h->retrieve();
+        list.erase(value);
+        return value;
+    }
+};
+
+// ---------------------------------------------------------
+// Simple_tree class (EXACTLY as in lab manual)
+// ---------------------------------------------------------
+template <typename Type>
+class Simple_tree {
+private:
+    Type element;
+    Simple_tree* parent_node;
+    List<Simple_tree*> children;
+
+public:
+    Simple_tree(Type const& = Type(), Simple_tree* = NULL);
+    Type retrieve() const;
+    Simple_tree* parent() const;
+    Simple_tree* child(int n) const;
+    int degree() const;
+    bool is_root() const;
+    bool is_leaf() const;
+    int size() const;
+    int height() const;
+    void insert(Type const&);
+    void attach(Simple_tree*);
+    void detach();
+    void depth_first_traversal() const;
+    void breadth_first_traversal();
+};
+
+// ---------------------------------------------------------
+// Constructor
+// ---------------------------------------------------------
+template <typename Type>
+Simple_tree<Type>::Simple_tree(Type const& obj, Simple_tree* p) :
+    element(obj), parent_node(p) {}
+
+// ---------------------------------------------------------
+// Retrieve
+// ---------------------------------------------------------
+template <typename Type>
+Type Simple_tree<Type>::retrieve() const {
+    return element;
+}
+
+// ---------------------------------------------------------
+// Parent
+// ---------------------------------------------------------
+template <typename Type>
+Simple_tree<Type>* Simple_tree<Type>::parent() const {
+    return parent_node;
+}
+
+// ---------------------------------------------------------
+// Child (nth)
+// ---------------------------------------------------------
+template <typename Type>
+Simple_tree<Type>* Simple_tree<Type>::child(int n) const {
+    if (n < 0 || n >= degree()) return NULL;
+
+    Node<Simple_tree*>* ptr = children.head();
+    for (int i = 0; i < n; i++) {
+        ptr = ptr->next();
+    }
+    return ptr->retrieve();
+}
+
+// ---------------------------------------------------------
+// Degree (number of children)
+// ---------------------------------------------------------
+template <typename Type>
+int Simple_tree<Type>::degree() const {
+    return children.size();
+}
+
+// ---------------------------------------------------------
+// Is root?
+// ---------------------------------------------------------
+template <typename Type>
+bool Simple_tree<Type>::is_root() const {
+    return (parent_node == NULL);
+}
+
+// ---------------------------------------------------------
+// Is leaf?
+// ---------------------------------------------------------
+template <typename Type>
+bool Simple_tree<Type>::is_leaf() const {
+    return (degree() == 0);
+}
+
+// ---------------------------------------------------------
+// Insert new child
+// ---------------------------------------------------------
+template <typename Type>
+void Simple_tree<Type>::insert(Type const& obj) {
+    children.push_back(new Simple_tree(obj, this));
+}
+
+// ---------------------------------------------------------
+// Attach subtree (lab manual style)
+// ---------------------------------------------------------
+template <typename Type>
+void Simple_tree<Type>::attach(Simple_tree<Type>* tree) {
+    if (!tree->is_root()) {
+        tree->detach();
+    }
+    tree->parent_node = this;
+    children.push_back(tree);
+}
+
+// ---------------------------------------------------------
+// Detach
+// ---------------------------------------------------------
+template <typename Type>
+void Simple_tree<Type>::detach() {
+    if (is_root()) return;
+    parent()->children.erase(this);
+    parent_node = NULL;
+}
+
+// ---------------------------------------------------------
+// Depth-first traversal (preorder)
+// ---------------------------------------------------------
+template <typename Type>
+void Simple_tree<Type>::depth_first_traversal() const {
+    cout << retrieve() << "\t";
+    for (Node<Simple_tree*>* ptr = children.head(); ptr != NULL; ptr = ptr->next()) {
+        ptr->retrieve()->depth_first_traversal();
+    }
+}
+
+// ---------------------------------------------------------
+// Breadth-first traversal
+// ---------------------------------------------------------
+template <typename Type>
+void Simple_tree<Type>::breadth_first_traversal() {
+    Queue<Simple_tree*> q;
+    q.push(this);
+
+    while (!q.empty()) {
+        Simple_tree* p = q.pop();
+        cout << p->retrieve() << "\t";
+
+        for (Node<Simple_tree*>* ptr = p->children.head(); ptr != NULL; ptr = ptr->next()) {
+            q.push(ptr->retrieve());
+        }
+    }
+}
+
+// ---------------------------------------------------------
+// MAIN PROGRAM: Build tree for "UMER"
+// ---------------------------------------------------------
+
+int main() {
+
+    Simple_tree<char>* root = new Simple_tree<char>('U');
+
+    // children
+    Simple_tree<char>* m = new Simple_tree<char>('M');
+    Simple_tree<char>* e = new Simple_tree<char>('E');
+    Simple_tree<char>* r = new Simple_tree<char>('R');
+
+    // attach in general tree style
+    root->attach(m);
+    root->attach(e);
+    root->attach(r);
+
+    cout << "\nDepth First Traversal:\n";
+    root->depth_first_traversal();
+
+    cout << "\n\nBreadth First Traversal:\n";
+    root->breadth_first_traversal();
+
+    return 0;
+}
