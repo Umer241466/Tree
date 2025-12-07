@@ -1,0 +1,95 @@
+template <typename Type>
+Simple_tree<Type>::Simple_tree(Type const& obj, Simple_tree* p)
+    : node_value(obj), parent_node(p) {}
+
+template <typename Type>
+Type Simple_tree<Type>::retrieve() const {
+    return node_value;
+}
+
+template <typename Type>
+Simple_tree<Type>* Simple_tree<Type>::parent() const {
+    return parent_node;
+}
+
+template <typename Type>
+Simple_tree<Type>* Simple_tree<Type>::child(int n) const {
+    if (n < 0 || n >= degree()) return nullptr;
+
+    Node<Simple_tree*>* ptr = children.head();
+    for (int i = 0; i < n; i++)
+        ptr = ptr->next();
+
+    return ptr->retrieve();
+}
+
+template <typename Type>
+int Simple_tree<Type>::degree() const {
+    return children.size();
+}
+
+template <typename Type>
+bool Simple_tree<Type>::is_root() const {
+    return parent_node == nullptr;
+}
+
+template <typename Type>
+bool Simple_tree<Type>::is_leaf() const {
+    return degree() == 0;
+}
+
+template <typename Type>
+void Simple_tree<Type>::insert(Type const& obj) {
+    children.push_back(new Simple_tree(obj, this));
+}
+
+template <typename Type>
+int Simple_tree<Type>::size() const {
+    int s = 1;
+    for (Node<Simple_tree*>* ptr = children.head(); ptr != nullptr; ptr = ptr->next())
+        s += ptr->retrieve()->size();
+    return s;
+}
+
+template <typename Type>
+int Simple_tree<Type>::height() const {
+    int h = 0;
+    for (Node<Simple_tree*>* ptr = children.head(); ptr != nullptr; ptr = ptr->next())
+        h = std::max(h, 1 + ptr->retrieve()->height());
+    return h;
+}
+
+template <typename Type>
+void Simple_tree<Type>::attach(Simple_tree<Type>* tree) {
+    if (!tree->is_root()) tree->detach();
+    tree->parent_node = this;
+    children.push_back(tree);
+}
+
+template <typename Type>
+void Simple_tree<Type>::detach() {
+    if (is_root()) return;
+    parent()->children.erase(this);
+    parent_node = nullptr;
+}
+
+template <typename Type>
+void Simple_tree<Type>::depth_first_traversal() const {
+    cout << retrieve() << "\t";
+    for (Node<Simple_tree*>* ptr = children.head(); ptr != nullptr; ptr = ptr->next())
+        ptr->retrieve()->depth_first_traversal();
+}
+
+template <typename Type>
+void Simple_tree<Type>::breadth_first_traversal() {
+    Queue<Simple_tree*> q;
+    q.push(this);
+
+    while (!q.empty()) {
+        Simple_tree* p = q.pop();
+        cout << p->retrieve() << "\t";
+
+        for (Node<Simple_tree*>* ptr = p->children.head(); ptr != nullptr; ptr = ptr->next())
+            q.push(ptr->retrieve());
+    }
+}
