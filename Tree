@@ -204,7 +204,35 @@ void Simple_tree<Type>::breadth_first_traversal() {
     while (!q.empty()) {
         Simple_tree* p = q.pop();
         cout << p->retrieve() << "\t";
+int main() {
+    Tree<int> myTree(1); // Root node = 1
 
+    TreeNode<int>* root = myTree.getRoot();
+    root->addChild(2);
+    root->addChild(3);
+    root->addChild(4);
+
+    TreeNode<int>* node2 = myTree.find(2);
+    if (node2) {
+        node2->addChild(5);
+        node2->addChild(6);
+    }
+
+    TreeNode<int>* node3 = myTree.find(3);
+    if (node3) {
+        node3->addChild(7);
+    }
+
+    std::cout << "Preorder traversal: ";
+    myTree.preorder(root);
+    std::cout << "\nPostorder traversal: ";
+    myTree.postorder(root);
+    std::cout << "\nLevel-order traversal: ";
+    myTree.levelOrder();
+    std::cout << std::endl;
+
+    return 0;
+}
         for (Node<Simple_tree*>* ptr = p->children.head(); ptr != nullptr; ptr = ptr->next())
             q.push(ptr->retrieve());
     }
