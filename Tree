@@ -1,3 +1,119 @@
+//Node class
+template <typename Type>
+class Node {
+private:
+    Type element;
+    Node<Type>* next_node;
+
+public:
+    Node(Type const& e, Node<Type>* n = nullptr) :
+        element(e), next_node(n) {}
+
+    Type retrieve() const { return element; }
+    Node<Type>* next() const { return next_node; }
+    void set_next(Node<Type>* n) { next_node = n; }
+};
+
+// LLclass
+template <typename Type>
+class linkedlist {
+private:
+    Node<Type>* head_node;
+    Node<Type>* tail_node;
+    int list_size;
+
+public:
+    linkedlist() : head_node(nullptr), tail_node(nullptr), list_size(0) {}
+
+    Node<Type>* head() const { return head_node; }
+    int size() const { return list_size; }
+
+    void push_back(Type const& obj) {
+        Node<Type>* n = new Node<Type>(obj);
+        if (!head_node) {
+            head_node = tail_node = n;
+        } else {
+            tail_node->set_next(n);
+            tail_node = n;
+        }
+        list_size++;
+    }
+
+    // erase a specific pointer (PPT-style detach)
+    void erase(Type obj) {
+        if (!head_node) return;
+
+        if (head_node->retrieve() == obj) {
+            Node<Type>* temp = head_node;
+            head_node = head_node->next();
+            delete temp;
+            list_size--;
+            return;
+        }
+
+        Node<Type>* prev = head_node;
+        Node<Type>* curr = head_node->next();
+
+        while (curr != nullptr) {
+            if (curr->retrieve() == obj) {
+                prev->set_next(curr->next());
+                delete curr;
+                list_size--;
+                return;
+            }
+            prev = curr;
+            curr = curr->next();
+        }
+    }
+};
+
+//QUE CLASS
+template <typename Type>
+class Queue {
+private:
+    linkedlist<Type> list;
+
+public:
+    void push(Type const& obj) { list.push_back(obj); }
+    bool empty() const { return list.size() == 0; }
+
+    Type pop() {
+        Node<Type>* h = list.head();
+        Type value = h->retrieve();
+        list.erase(value);
+        return value;
+    }
+};
+
+//simple tree class
+template <typename Type>
+class Simple_tree {
+private:
+    Type node_value;
+    Simple_tree* parent_node;
+    linkedlist<Simple_tree*> children;
+
+public:
+    Simple_tree(Type const& = Type(), Simple_tree* = nullptr);
+
+    Type retrieve() const;
+    Simple_tree* parent() const;
+    Simple_tree* child(int n) const;
+    int degree() const;
+    bool is_root() const;
+    bool is_leaf() const;
+
+    int size() const;
+    int height() const;
+
+    void insert(Type const&);
+    void attach(Simple_tree*);
+    void detach();
+
+    void depth_first_traversal() const;
+    void breadth_first_traversal();
+};
+//implementation
 template <typename Type>
 Simple_tree<Type>::Simple_tree(Type const& obj, Simple_tree* p)
     : node_value(obj), parent_node(p) {}
