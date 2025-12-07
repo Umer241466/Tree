@@ -1,0 +1,189 @@
+#include <iostream>
+#include <list>
+#include <algorithm>
+#include <queue>
+
+template <typename Type>
+class Simple_tree {
+private:
+    Type node_value;
+    Simple_tree* parent_node;
+    std::list<Simple_tree*> children;
+
+public:
+    // Constructor
+    Simple_tree(Type const& obj = Type(), Simple_tree* p = nullptr)
+        : node_value(obj), parent_node(p) {
+        // Empty constructor
+    }
+
+    // Accessors
+    Type retrieve() const {
+        return node_value;
+    }
+
+    Simple_tree* parent() const {
+        return parent_node;
+    }
+
+    int degree() const {
+        return children.size();
+    }
+
+    bool is_root() const {
+        return (parent() == nullptr);
+    }
+
+    bool is_leaf() const {
+        return (degree() == 0);
+    }
+
+    // Get nth child (0-indexed)
+    Simple_tree* child(int n) const {
+        if (n < 0 || n >= degree()) {
+            return nullptr;
+        }
+        
+        auto it = children.begin();
+        std::advance(it, n);
+        return *it;
+    }
+
+    // Tree size (number of nodes)
+    int size() const {
+        int tree_size = 1;
+        for (Simple_tree* child : children) {
+            tree_size += child->size();
+        }
+        return tree_size;
+    }
+
+    // Tree height
+    int height() const {
+        if (this == nullptr) {
+            return -1;
+        }
+        
+        int tree_height = 0;
+        for (Simple_tree* child : children) {
+            tree_height = std::max(tree_height, 1 + child->height());
+        }
+        return tree_height;
+    }
+
+    // Operations
+    void insert(Type const& obj) {
+        children.push_back(new Simple_tree(obj, this));
+    }
+
+    void attach(Simple_tree<Type>* tree) {
+        if (!tree->is_root()) {
+            tree->detach();
+        }
+        tree->parent_node = this;
+        children.push_back(tree);
+    }
+
+    void detach() {
+        if (is_root()) {
+            return;
+        }
+        
+        // Remove this node from parent's children list
+        parent()->children.remove(this);
+        parent_node = nullptr;
+    }
+
+    // Traversals
+    void depth_first_traversal() const {
+        std::cout << retrieve() << " ";
+        for (Simple_tree* child : children) {
+            child->depth_first_traversal();
+        }
+    }
+
+    void breadth_first_traversal() {
+        std::queue<Simple_tree*> q;
+        q.push(this);
+        
+        while (!q.empty()) {
+            Simple_tree* current = q.front();
+            q.pop();
+            
+            std::cout << current->retrieve() << " ";
+            
+            // Add all children to queue
+            for (Simple_tree* child : current->children) {
+                q.push(child);
+            }
+        }
+    }
+
+    // Alternative traversal methods with more control
+    void pre_order_traversal() {
+        std::cout << retrieve() << " ";
+        for (Simple_tree* child : children) {
+            child->pre_order_traversal();
+        }
+    }
+
+    void post_order_traversal() {
+        for (Simple_tree* child : children) {
+            child->post_order_traversal();
+        }
+        std::cout << retrieve() << " ";
+    }
+};
+
+// Example usage
+int main() {
+    // Create a tree
+    Simple_tree<int>* root = new Simple_tree<int>(1);
+    
+    // Add children
+    root->insert(2);
+    root->insert(3);
+    root->insert(4);
+    
+    // Access children
+    Simple_tree<int>* firstChild = root->child(0);
+    if (firstChild) {
+        firstChild->insert(5);
+        firstChild->insert(6);
+    }
+    
+    // Tree properties
+    std::cout << "Tree size: " << root->size() << std::endl;
+    std::cout << "Tree height: " << root->height() << std::endl;
+    std::cout << "Is root: " << root->is_root() << std::endl;
+    std::cout << "Is leaf: " << root->is_leaf() << std::endl;
+    std::cout << "Degree: " << root->degree() << std::endl;
+    
+    // Traversals
+    std::cout << "\nDepth-first traversal: ";
+    root->depth_first_traversal();
+    
+    std::cout << "\nBreadth-first traversal: ";
+    root->breadth_first_traversal();
+    
+    std::cout << "\nPre-order traversal: ";
+    root->pre_order_traversal();
+    
+    std::cout << "\nPost-order traversal: ";
+    root->post_order_traversal();
+    
+    // Create another tree and attach it
+    Simple_tree<int>* subtree = new Simple_tree<int>(10);
+    subtree->insert(11);
+    subtree->insert(12);
+    
+    root->attach(subtree);
+    
+    std::cout << "\n\nAfter attaching subtree - Depth-first: ";
+    root->depth_first_traversal();
+    
+    // Cleanup (in real implementation, add destructor)
+    // For now, memory leak for simplicity
+    
+    return 0;
+}
