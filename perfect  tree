@@ -1,0 +1,141 @@
+#include <iostream>
+using namespace std;
+
+// ---------------------------------------------------------
+// Perfect Binary Tree (Lab Manual Style)
+// ---------------------------------------------------------
+template <typename Type>
+class Perfect_tree {
+private:
+    Type element;
+    Perfect_tree* parent_node;
+    Perfect_tree* left_child;
+    Perfect_tree* right_child;
+
+public:
+    // Constructor
+    Perfect_tree(Type const& = Type(), Perfect_tree* = NULL);
+
+    // Accessors
+    Type retrieve() const;
+    Perfect_tree* parent() const;
+    Perfect_tree* left() const;
+    Perfect_tree* right() const;
+
+    // Properties
+    bool is_root() const;
+    bool is_leaf() const;
+
+    // Modifiers
+    void insert_left(Type const&);
+    void insert_right(Type const&);
+
+    // Traversals
+    void depth_first_traversal() const;     // Preorder
+    void breadth_first_traversal();         // Level order
+};
+
+// ---------------------------------------------------------
+// Constructor
+// ---------------------------------------------------------
+template <typename Type>
+Perfect_tree<Type>::Perfect_tree(Type const& obj, Perfect_tree* p)
+    : element(obj), parent_node(p),
+      left_child(NULL), right_child(NULL) {}
+
+// ---------------------------------------------------------
+// Retrieve element
+// ---------------------------------------------------------
+template <typename Type>
+Type Perfect_tree<Type>::retrieve() const {
+    return element;
+}
+
+// ---------------------------------------------------------
+// Parent
+// ---------------------------------------------------------
+template <typename Type>
+Perfect_tree<Type>* Perfect_tree<Type>::parent() const {
+    return parent_node;
+}
+
+// ---------------------------------------------------------
+// Left child
+// ---------------------------------------------------------
+template <typename Type>
+Perfect_tree<Type>* Perfect_tree<Type>::left() const {
+    return left_child;
+}
+
+// ---------------------------------------------------------
+// Right child
+// ---------------------------------------------------------
+template <typename Type>
+Perfect_tree<Type>* Perfect_tree<Type>::right() const {
+    return right_child;
+}
+
+// ---------------------------------------------------------
+// Is root?
+// ---------------------------------------------------------
+template <typename Type>
+bool Perfect_tree<Type>::is_root() const {
+    return parent_node == NULL;
+}
+
+// ---------------------------------------------------------
+// Is leaf?
+// ---------------------------------------------------------
+template <typename Type>
+bool Perfect_tree<Type>::is_leaf() const {
+    return (left_child == NULL && right_child == NULL);
+}
+
+// ---------------------------------------------------------
+// Insert left child
+// ---------------------------------------------------------
+template <typename Type>
+void Perfect_tree<Type>::insert_left(Type const& obj) {
+    left_child = new Perfect_tree(obj, this);
+}
+
+// ---------------------------------------------------------
+// Insert right child
+// ---------------------------------------------------------
+template <typename Type>
+void Perfect_tree<Type>::insert_right(Type const& obj) {
+    right_child = new Perfect_tree(obj, this);
+}
+
+// ---------------------------------------------------------
+// Depth First Traversal (Preorder)
+// ---------------------------------------------------------
+template <typename Type>
+void Perfect_tree<Type>::depth_first_traversal() const {
+    cout << element << "\t";
+    if (left_child)
+        left_child->depth_first_traversal();
+    if (right_child)
+        right_child->depth_first_traversal();
+}
+
+// ---------------------------------------------------------
+// Breadth First Traversal (Level Order)
+// ---------------------------------------------------------
+template <typename Type>
+void Perfect_tree<Type>::breadth_first_traversal() {
+    Perfect_tree* queue[50];
+    int front = 0, rear = 0;
+
+    queue[rear++] = this;
+
+    while (front < rear) {
+        Perfect_tree* p = queue[front++];
+        cout << p->retrieve() << "\t";
+
+        if (p->left_child)
+            queue[rear++] = p->left_child;
+        if (p->right_child)
+            queue[rear++] = p->right_child;
+    }
+}
