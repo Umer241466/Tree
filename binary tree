@@ -1,0 +1,117 @@
+#include <iostream>
+using namespace std;
+
+template <typename Type>
+class Binary_tree {
+private:
+    Type element;
+    Binary_tree* parent_node;
+    Binary_tree* left_child;
+    Binary_tree* right_child;
+
+public:
+    Binary_tree(Type const& = Type(), Binary_tree* = NULL);
+
+    Type retrieve() const;
+    Binary_tree* parent() const;
+    Binary_tree* left() const;
+    Binary_tree* right() const;
+
+    bool is_root() const;
+    bool is_leaf() const;
+
+    void insert_left(Type const&);
+    void insert_right(Type const&);
+
+    void depth_first_traversal() const;
+    void breadth_first_traversal();
+};
+
+template <typename Type>
+Binary_tree<Type>::Binary_tree(Type const& obj, Binary_tree* p)
+    : element(obj), parent_node(p),
+      left_child(NULL), right_child(NULL) {}
+
+template <typename Type>
+Type Binary_tree<Type>::retrieve() const {
+    return element;
+}
+
+template <typename Type>
+Binary_tree<Type>* Binary_tree<Type>::parent() const {
+    return parent_node;
+}
+
+template <typename Type>
+Binary_tree<Type>* Binary_tree<Type>::left() const {
+    return left_child;
+}
+
+template <typename Type>
+Binary_tree<Type>* Binary_tree<Type>::right() const {
+    return right_child;
+}
+
+template <typename Type>
+bool Binary_tree<Type>::is_root() const {
+    return parent_node == NULL;
+}
+
+template <typename Type>
+bool Binary_tree<Type>::is_leaf() const {
+    return (left_child == NULL && right_child == NULL);
+}
+
+template <typename Type>
+void Binary_tree<Type>::insert_left(Type const& obj) {
+    left_child = new Binary_tree(obj, this);
+}
+
+template <typename Type>
+void Binary_tree<Type>::insert_right(Type const& obj) {
+    right_child = new Binary_tree(obj, this);
+}
+
+template <typename Type>
+void Binary_tree<Type>::depth_first_traversal() const {
+    cout << element << "\t";
+    if (left_child)
+        left_child->depth_first_traversal();
+    if (right_child)
+        right_child->depth_first_traversal();
+}
+
+template <typename Type>
+void Binary_tree<Type>::breadth_first_traversal() {
+    Binary_tree* queue[50];
+    int front = 0, rear = 0;
+
+    queue[rear++] = this;
+
+    while (front < rear) {
+        Binary_tree* p = queue[front++];
+        cout << p->retrieve() << "\t";
+
+        if (p->left_child)
+            queue[rear++] = p->left_child;
+        if (p->right_child)
+            queue[rear++] = p->right_child;
+    }
+}
+
+int main() {
+
+    Binary_tree<char>* root = new Binary_tree<char>('A');
+
+    root->insert_left('B');
+    root->insert_right('C');
+
+    root->left()->insert_left('D');
+    root->right()->insert_right('E');
+
+    root->depth_first_traversal();
+    cout << endl;
+    root->breadth_first_traversal();
+
+    return 0;
+}
