@@ -1,0 +1,286 @@
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+// ---------------------------------------------------------
+// Node class
+// ---------------------------------------------------------
+template <typename Type>
+class Node {
+private:
+    Type element;
+    Node<Type>* next_node;
+
+public:
+    Node(Type const& e, Node<Type>* n = nullptr)
+        : element(e), next_node(n) {}
+
+    Type retrieve() const { return element; }
+    Node<Type>* next() const { return next_node; }
+    void set_next(Node<Type>* n) { next_node = n; }
+};
+
+// ---------------------------------------------------------
+// Linked List class
+// ---------------------------------------------------------
+template <typename Type>
+class linkedlist {
+private:
+    Node<Type>* head_node;
+    Node<Type>* tail_node;
+    int list_size;
+
+public:
+    linkedlist() : head_node(nullptr), tail_node(nullptr), list_size(0) {}
+
+    Node<Type>* head() const { return head_node; }
+    int size() const { return list_size; }
+
+    void push_back(Type const& obj) {
+        Node<Type>* n = new Node<Type>(obj);
+        if (!head_node) {
+            head_node = tail_node = n;
+        } else {
+            tail_node->set_next(n);
+            tail_node = n;
+        }
+        list_size++;
+    }
+
+    void erase(Type obj) {
+        if (!head_node) return;
+
+        if (head_node->retrieve() == obj) {
+            Node<Type>* temp = head_node;
+            head_node = head_node->next();
+            delete temp;
+            list_size--;
+            return;
+        }
+
+        Node<Type>* prev = head_node;
+        Node<Type>* curr = head_node->next();
+
+        while (curr != nullptr) {
+            if (curr->retrieve() == obj) {
+                prev->set_next(curr->next());
+                delete curr;
+                list_size--;
+                return;
+            }
+            prev = curr;
+            curr = curr->next();
+        }
+    }
+};
+
+// ---------------------------------------------------------
+// Queue class (used for level-order traversal)
+// ---------------------------------------------------------
+template <typename Type>
+class Queue {
+private:
+    linkedlist<Type> list;
+
+public:
+    void push(Type const& obj) { list.push_back(obj); }
+    bool empty() const { return list.size() == 0; }
+
+    Type pop() {
+        Node<Type>* h = list.head();
+        Type value = h->retrieve();
+        list.erase(value);
+        return value;
+    }
+};
+
+// ---------------------------------------------------------
+// Binary Search Tree (PPT + Simple_tree STYLE)
+// ---------------------------------------------------------
+template <typename Type>
+class Binary_search_tree {
+private:
+    Type node_value;
+    Binary_search_tree* parent_node;
+    Binary_search_tree* left_child;
+    Binary_search_tree* right_child;
+
+public:
+    Binary_search_tree(Type const& = Type(), Binary_search_tree* = nullptr);
+
+    Type retrieve() const;
+    Binary_search_tree* parent() const;
+    Binary_search_tree* left() const;
+    Binary_search_tree* right() const;
+
+    bool is_root() const;
+    bool is_leaf() const;
+
+    int size() const;
+    int height() const;
+
+    void insert(Type const&);
+    bool find(Type const&) const;
+
+    void inorder_traversal() const;
+    void preorder_traversal() const;
+    void postorder_traversal() const;
+    void level_order_traversal();
+};
+
+// ---------------------------------------------------------
+// BST IMPLEMENTATION
+// ---------------------------------------------------------
+template <typename Type>
+Binary_search_tree<Type>::Binary_search_tree(Type const& obj,
+                                             Binary_search_tree* p)
+    : node_value(obj),
+      parent_node(p),
+      left_child(nullptr),
+      right_child(nullptr) {}
+
+template <typename Type>
+Type Binary_search_tree<Type>::retrieve() const {
+    return node_value;
+}
+
+template <typename Type>
+Binary_search_tree<Type>* Binary_search_tree<Type>::parent() const {
+    return parent_node;
+}
+
+template <typename Type>
+Binary_search_tree<Type>* Binary_search_tree<Type>::left() const {
+    return left_child;
+}
+
+template <typename Type>
+Binary_search_tree<Type>* Binary_search_tree<Type>::right() const {
+    return right_child;
+}
+
+template <typename Type>
+bool Binary_search_tree<Type>::is_root() const {
+    return parent_node == nullptr;
+}
+
+template <typename Type>
+bool Binary_search_tree<Type>::is_leaf() const {
+    return left_child == nullptr && right_child == nullptr;
+}
+
+template <typename Type>
+int Binary_search_tree<Type>::size() const {
+    int s = 1;
+    if (left_child)  s += left_child->size();
+    if (right_child) s += right_child->size();
+    return s;
+}
+
+template <typename Type>
+int Binary_search_tree<Type>::height() const {
+    int lh = (left_child) ? left_child->height() : 0;
+    int rh = (right_child) ? right_child->height() : 0;
+    return 1 + max(lh, rh);
+}
+
+// INSERT (PPT logic)
+template <typename Type>
+void Binary_search_tree<Type>::insert(Type const& obj) {
+    if (obj < node_value) {
+        if (!left_child)
+            left_child = new Binary_search_tree(obj, this);
+        else
+            left_child->insert(obj);
+    }
+    else if (obj > node_value) {
+        if (!right_child)
+            right_child = new Binary_search_tree(obj, this);
+        else
+            right_child->insert(obj);
+    }
+}
+
+// FIND
+template <typename Type>
+bool Binary_search_tree<Type>::find(Type const& obj) const {
+    if (obj == node_value) return true;
+    if (obj < node_value && left_child) return left_child->find(obj);
+    if (obj > node_value && right_child) return right_child->find(obj);
+    return false;
+}
+
+// TRAVERSALS
+template <typename Type>
+void Binary_search_tree<Type>::inorder_traversal() const {
+    if (left_child) left_child->inorder_traversal();
+    cout << node_value << "\t";
+    if (right_child) right_child->inorder_traversal();
+}
+
+template <typename Type>
+void Binary_search_tree<Type>::preorder_traversal() const {
+    cout << node_value << "\t";
+    if (left_child) left_child->preorder_traversal();
+    if (right_child) right_child->preorder_traversal();
+}
+
+template <typename Type>
+void Binary_search_tree<Type>::postorder_traversal() const {
+    if (left_child) left_child->postorder_traversal();
+    if (right_child) right_child->postorder_traversal();
+    cout << node_value << "\t";
+}
+
+// LEVEL ORDER using Queue
+template <typename Type>
+void Binary_search_tree<Type>::level_order_traversal() {
+    Queue<Binary_search_tree*> q;
+    q.push(this);
+
+    while (!q.empty()) {
+        Binary_search_tree* p = q.pop();
+        cout << p->retrieve() << "\t";
+
+        if (p->left_child)
+            q.push(p->left_child);
+        if (p->right_child)
+            q.push(p->right_child);
+    }
+}
+
+// ---------------------------------------------------------
+// MAIN
+// ---------------------------------------------------------
+int main() {
+
+    Binary_search_tree<int>* root =
+        new Binary_search_tree<int>(50);
+
+    root->insert(30);
+    root->insert(70);
+    root->insert(20);
+    root->insert(40);
+    root->insert(60);
+    root->insert(80);
+
+    cout << "Inorder (Sorted): ";
+    root->inorder_traversal();
+
+    cout << "\nPreorder: ";
+    root->preorder_traversal();
+
+    cout << "\nPostorder: ";
+    root->postorder_traversal();
+
+    cout << "\nLevel Order: ";
+    root->level_order_traversal();
+
+    cout << "\n\nSize: " << root->size();
+    cout << "\nHeight: " << root->height();
+
+    cout << "\nFind 40: " << root->find(40);
+    cout << "\nFind 99: " << root->find(99);
+
+    return 0;
+}
